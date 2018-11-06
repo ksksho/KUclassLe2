@@ -32,6 +32,7 @@ import ch.idsia.tools.MarioAIOptions;
 import ch.idsia.agents.Agent;
 import ch.idsia.agents.controllers.IgnoreObstacleAgent;
 import ch.idsia.agents.controllers.Work3Agent;
+import ch.idsia.agents.controllers.Work4_1RuleAgent;
 
 /**
  * Created by IntelliJ IDEA. User: Sergey Karakovskiy, sergey at idsia dot ch

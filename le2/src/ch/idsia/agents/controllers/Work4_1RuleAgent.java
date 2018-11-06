@@ -6,14 +6,14 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.benchmark.mario.engine.sprites.Sprite;
 import ch.idsia.benchmark.mario.engine.GeneralizerLevelScene;
 
-public class Work3Agent extends BasicMarioAIAgent implements Agent {
+public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 	int trueJumpCounter = 0;
 	int trueSpeedCounter = 0;
 	int falling = 0;// 上昇中-1、通常時0、落下中1
 	int marioModeSave;
 
-	public Work3Agent() {
-		super("Work3Agent");
+	public Work4_1RuleAgent() {
+		super("Work4_1RuleAgent");
 		reset();
 	}
 
@@ -48,7 +48,7 @@ public class Work3Agent extends BasicMarioAIAgent implements Agent {
 		} //着地するたびリセット→0(通常時)
 		else if (getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 2, marioEgoCol) == 0
-				&& getReceptiveFieldCellValue(marioEgoRow + 3, marioEgoCol) == 0
+			    && getReceptiveFieldCellValue(marioEgoRow + 3, marioEgoCol) == 0
 				) {
 			falling = -1;
 		} // マリオの3マス下が穴→-1(上昇中)
@@ -68,7 +68,8 @@ public class Work3Agent extends BasicMarioAIAgent implements Agent {
 		if (marioMode == 2) {
 			action[Mario.KEY_SPEED] = getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 3
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 1) > 3;
+					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 1) > 3
+					;
 
 		} else if (marioModeSave == 2) {
 			action[Mario.KEY_SPEED] = false;
@@ -80,10 +81,15 @@ public class Work3Agent extends BasicMarioAIAgent implements Agent {
 		if (falling <= 0) {
 			if (isObstacle(marioEgoRow, marioEgoCol + 1)
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 2) != Sprite.KIND_NONE
-					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) != Sprite.KIND_NONE || isHole(marioEgoCol + 1)) {
+					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) != Sprite.KIND_NONE || isHole(marioEgoCol + 1))
+					 {
 				action[Mario.KEY_JUMP] = isMarioAbleToJump || !isMarioOnGround;
+				if (getEnemiesCellValue(marioEgoRow -1, marioEgoCol +2) > 3 || getEnemiesCellValue(marioEgoRow -1, marioEgoCol +1) > 3) {
+					action[Mario.KEY_RIGHT] = false;
+				}//右上に敵がいる時のジャンプを遅らせる		
 			}
 			// 真横に障害物、敵が右2マスにいるときジャンプ
+			//壁が高いときに障害物を使って乗り越える 
 			if (falling == -1 && (getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 3
 					|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 3
 					|| getEnemiesCellValue(marioEgoRow - 2, marioEgoCol + 2) > 3)) {
@@ -114,15 +120,8 @@ public class Work3Agent extends BasicMarioAIAgent implements Agent {
 
 }
 
-/*
- * work2agentでは敵の回避は敵が目前に来たときにジャンプすることのみ よって、空中にいてジャンプできないときは回避できない 回避すべき状況
- * 右斜め上に敵がいるのに目前に障害物があるからとジャンプ 落下中で右斜め下に敵 右斜め上から敵が降ってくる 敵を踏みつける動作は消したくない 解決策1
- * 済;a落下中に右2マス目の地面に敵→左(右1マス目なら放置で踏みつけ?) 上昇中に右斜め上に敵→左
- * (地面から3マス以内の敵との衝突は回避できない、落下中に右上に敵がいると悪手) 右1マス上3マスに敵→ジャンプしない(目前に敵がいるならジャンプしたい)
- * 左を押している間は左側の敵&穴に注意
- * 
- * 敵が目前にきたらファイアを出す(マリオの状態に依存) 常にファイアを1球飛ばしておく(マリオの状態に依存)
- * 
- * 結果 a右3下2,右2下1に敵→そのままだと衝突 右1下3に敵→踏む
- * 条件のバッティングがあったので順番を入れ替えると、ファイアが機能してすべて解決した。
- */
+
+
+//右側に高さ5以上の壁→左に行ってブロックを利用して飛び越える
+//同じ座標に2人の敵→ファイア2発発射or落下時敵回避能力向上
+//ジャンプして敵に突っ込むときの回避
