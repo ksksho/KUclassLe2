@@ -1,10 +1,10 @@
 package ch.idsia.agents.controllers;
 
 import ch.idsia.agents.Agent;
-import ch.idsia.benchmark.mario.engine.sprites.Mario;
-import ch.idsia.benchmark.mario.environments.Environment;
-import ch.idsia.benchmark.mario.engine.sprites.Sprite;
 import ch.idsia.benchmark.mario.engine.GeneralizerLevelScene;
+import ch.idsia.benchmark.mario.engine.sprites.Mario;
+import ch.idsia.benchmark.mario.engine.sprites.Sprite;
+import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 	int trueJumpCounter = 0;
@@ -73,38 +73,54 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 
 		// ファイアーマリオ攻撃
 		if (marioMode == 2) {
-			action[Mario.KEY_SPEED] = getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow + 2, marioEgoCol + 7) > 3;
+			action[Mario.KEY_SPEED] = getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25
+					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 25
+					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 1) > 25
+					|| getEnemiesCellValue(marioEgoRow + 2, marioEgoCol + 7) > 25;
 
 		} else if (marioModeSave == 2) {
 			action[Mario.KEY_SPEED] = false;
 		}
 		// ファイアマリオ攻撃終わり
 
+		if(!isMarioAbleToJump &&
+				((getReceptiveFieldCellValue(marioEgoRow+2, marioEgoCol+1)==-24
+				    && getReceptiveFieldCellValue(marioEgoRow +2, marioEgoCol+2 )==0)
+				||(getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol) == -24
+				    &&getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol+1)==0
+				    &&getReceptiveFieldCellValue(marioEgoRow + 3, marioEgoCol+3) == -24)
+				)){ 
+			action[Mario.KEY_RIGHT] = false;
+		}
+		else if (!isMarioAbleToJump 
+				&& getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol) == -24
+				&&getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol+1)==0
+				&&getReceptiveFieldCellValue(marioEgoRow+ 3, marioEgoCol+3) == -24){
+			action[Mario.KEY_LEFT] = true;
+		}//着地後ジャンプまで
+		else if (getReceptiveFieldCellValue(marioEgoRow - 3, marioEgoCol + 3) == -24) {
+			action[Mario.KEY_JUMP] = isMarioAbleToJump || !(isMarioOnGround || getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == 0);
+		}
+		//ブロックにのぼる
+		
 		// 通常時
 		if (falling <= 0) {
-			if (falling == 0 
-					&& getReceptiveFieldCellValue(marioEgoRow - 3, marioEgoCol + 2) == -24
-					&& getReceptiveFieldCellValue(marioEgoRow - 3, marioEgoCol ) == 0) {
-				action[Mario.KEY_JUMP] = true;
-			}
 			if (isObstacle(marioEgoRow, marioEgoCol + 1)
+					|| isObstacle(marioEgoRow -1, marioEgoCol +1)
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 2) != Sprite.KIND_NONE
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) != Sprite.KIND_NONE
 					|| isHole(marioEgoCol + 1)) {
-				action[Mario.KEY_JUMP] = isMarioAbleToJump || !isMarioOnGround;
-				if (getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 2) > 3
-						|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 3) {
+				action[Mario.KEY_JUMP ] = isMarioAbleToJump || !(isMarioOnGround || getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == -24);
+				if (getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 2) > 25
+						|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25) {
 					action[Mario.KEY_RIGHT] = false;
 				} // 右上に敵がいる時のジャンプを遅らせる
 			}
 			// 真横に障害物、敵が右2マスにいるときジャンプ
 			// 壁が高いときに障害物を使って乗り越える
-			if (falling == -1 && (getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 3
-					|| getEnemiesCellValue(marioEgoRow - 2, marioEgoCol + 2) > 3)) {
+			if (falling == -1 && (getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 25
+					|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25
+					|| getEnemiesCellValue(marioEgoRow - 2, marioEgoCol + 2) > 25)) {
 				action[Mario.KEY_RIGHT] = false;
 				action[Mario.KEY_LEFT] = true;
 
@@ -114,12 +130,13 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 
 		// 落下中
 		else if (falling == 1) {
-			if (!isHole(marioEgoCol) && isHole(marioEgoCol + 1)) {
+			if (!isHole(marioEgoCol) && isHole(marioEgoCol + 1)
+					|| (isHole(marioEgoCol + 2) && !isHole(marioEgoCol+1))) {
 				action[Mario.KEY_RIGHT] = false;
 			}
 			// 右が穴かつ下が陸地→右移動終了(重要)
-			else if ((getEnemiesCellValue(marioEgoRow + 2, marioEgoCol + 3) > 3
-					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 2) > 3) && !isHole(marioEgoCol - 1)) {
+			else if ((getEnemiesCellValue(marioEgoRow + 2, marioEgoCol + 3) > 25
+					|| getEnemiesCellValue(marioEgoRow + 1, marioEgoCol + 2) > 25) && !isHole(marioEgoCol - 1) && !isHole(marioEgoCol)) {
 				action[Mario.KEY_RIGHT] = false;
 				action[Mario.KEY_LEFT] = true;
 			}
@@ -137,3 +154,7 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 // 同じ座標に2人の敵→ファイア2発発射or落下時敵回避能力向上
 // ジャンプして敵に突っ込むときの回避
 //3マス上ブロック、4マス上敵なし→ジャンプ
+//isMarioAbleToJumpはjumpボタンtrue時はfalse
+//isMarioOnGroundはブロック上はfalse
+//ジャンプ後ある程度長押ししないと小ジャンプ→!isMarioOnGroundが使われる
+//jumpをfalseにしないとブロック上でジャンプしない
