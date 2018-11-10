@@ -11,7 +11,7 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 	int trueSpeedCounter = 0;
 	int falling = 0;// 上昇中-1、通常時0、落下中1
 	int marioModeSave;
-	boolean jumpoffSwitch;
+	int nomoveJumpCounter;
 
 	public Work4_1RuleAgent() {
 		super("Work4_1RuleAgent");
@@ -59,15 +59,18 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 			falling = 1;
 		} // falling = -1 かつ マリオの2マス下が穴 → 1(落下中)
 		// fallingの設定終わり
-		
+
 
 		if (falling == 1 && getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol)< 0) {
 			//action[Mario.KEY_JUMP] = false;
 		}
-		
+
 		// 基本動作(重要度最低→最初)
 		action[Mario.KEY_RIGHT] = true;
 		action[Mario.KEY_LEFT] = false;
+		if (isMarioOnGround) {
+			action[Mario.KEY_SPEED] = false;
+		}
 		// 基本動作終了
 
 		// ファイアーマリオ攻撃
@@ -107,17 +110,17 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 			if (getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol)==-24
 				&& getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol+1)==0
 				&& isObstacle(marioEgoRow+1, marioEgoCol+2)) {
-				action[Mario.KEY_RIGHT] = getEnemiesCellValue(marioEgoRow-1, marioEgoCol+2)<=3 
+				action[Mario.KEY_RIGHT] = getEnemiesCellValue(marioEgoRow-1, marioEgoCol+2)<=3
 						&& getEnemiesCellValue(marioEgoRow -1, marioEgoCol +1)<=3 ;
-				//action[Mario.KEY_JUMP] = isMarioAbleToJump || !isMarioOnGround;
 			}
+			
 			if (isObstacle(marioEgoRow, marioEgoCol + 1)
 					|| isObstacle(marioEgoRow -1, marioEgoCol +1)
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 2) != Sprite.KIND_NONE
 					|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) != Sprite.KIND_NONE
 					|| isHole(marioEgoCol + 1)) {
-				action[Mario.KEY_JUMP ] = isMarioAbleToJump || !(isMarioOnGround 
-						//|| getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == -24
+				action[Mario.KEY_JUMP ] = isMarioAbleToJump || !(isMarioOnGround
+						|| getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == -24
 						);
 				if (getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 2) > 25
 						|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25) {
@@ -151,6 +154,23 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 		}
 		// 落下中終わり
 
+		//以下、超特殊な状況への対応(条件を厳しめ)
+		if (isObstacle(marioEgoRow, marioEgoCol+1)) {
+			nomoveJumpCounter++;
+			if (nomoveJumpCounter >= 50) {
+				action[Mario.KEY_JUMP] = isMarioAbleToJump || !isMarioOnGround;
+			}
+		}//壁を越えられず何度も同じ場所でジャンプ→大ジャンプ
+		if (getReceptiveFieldCellValue(marioEgoRow, marioEgoCol) == -60
+				&& getReceptiveFieldCellValue(marioEgoRow, marioEgoCol + 1) == -60) {
+			action[Mario.KEY_SPEED] = getReceptiveFieldCellValue(marioEgoRow, marioEgoCol) == -60;
+		}//壁の中に入ってしまいダッシュしないと大ジャンプできない
+		else if (getReceptiveFieldCellValue(marioEgoRow +1, marioEgoCol)== -24
+				&& getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol + 2) == 0
+					&& getReceptiveFieldCellValue(marioEgoRow +1, marioEgoCol + 5) == -60) {
+			action[Mario.KEY_JUMP] = isMarioAbleToJump  || getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol+ 5) != -60;
+		}
+
 		marioModeSave = marioMode;
 		return action;
 	}
@@ -168,3 +188,6 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 //jumpをfalseにしないとブロック上でジャンプしない
 //falseにするようにしたら、今度はブロック上から障害物をよけるジャンプが小ジャンプになってしまう。
 //(ジャンプの直後ジャンプボタンを離して、そのあとまたジャンプ長押し。)
+//元の上に登れていたものを復元して、同じx座標で何回もジャンプしたときは大ジャンプするというふうにする？
+//壁にのぼり切った後、マリオは壁の中に入るが、右側は壁扱いなのでジャンプするときに右移動が妨害されて落ちてしまう。
+//マリオのいる座標が壁の場合の動作を設定する。さらに条件として右側に壁があるか否かも考慮する。

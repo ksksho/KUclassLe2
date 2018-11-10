@@ -43,10 +43,11 @@ public static void main(String[] args)
     final MarioAIOptions marioAIOptions = new MarioAIOptions(args);
 
    final Agent agent = new Work4_1RuleAgent();
+//   final Agent agent = new Work3Agent();
     marioAIOptions.setAgent(agent);
-    
+
     marioAIOptions.setArgs("-lde on -ltb off -ld 2 -ls 0 -le g");
-    
+
     final BasicTask basicTask = new BasicTask(marioAIOptions);
     basicTask.setOptionsAndReset(marioAIOptions);
     basicTask.doEpisodes(1,true,1);
