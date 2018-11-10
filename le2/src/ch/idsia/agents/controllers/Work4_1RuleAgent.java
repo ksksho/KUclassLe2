@@ -123,11 +123,20 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 						|| getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == -24
 						);
 				if (getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 2) > 25
-						|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25) {
+						|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25
+						||(getEnemiesCellValue(marioEgoRow, marioEgoCol+1) > 25
+						&& getReceptiveFieldCellValue(marioEgoRow -2, marioEgoCol)== -60)) {
 					action[Mario.KEY_RIGHT] = false;
-				} // 右上に敵がいる時のジャンプを遅らせる
+				} // 右上に敵がいる時のジャンプを遅らせる.
 			}
 			// 真横に障害物、敵が右2マスにいるときジャンプ
+			if (getReceptiveFieldCellValue(marioEgoRow+1, marioEgoCol)== -24
+					&& getReceptiveFieldCellValue(marioEgoRow +1, marioEgoCol + 1)== 0
+				&& getEnemiesCellValue(marioEgoRow +1, marioEgoCol + 2)> 25) {
+				action[Mario.KEY_RIGHT] = false;
+			}
+			
+			
 			// 壁が高いときに障害物を使って乗り越える
 			if (falling == -1 && (getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) > 25
 					|| getEnemiesCellValue(marioEgoRow - 1, marioEgoCol + 1) > 25
@@ -191,3 +200,4 @@ public class Work4_1RuleAgent extends BasicMarioAIAgent implements Agent {
 //元の上に登れていたものを復元して、同じx座標で何回もジャンプしたときは大ジャンプするというふうにする？
 //壁にのぼり切った後、マリオは壁の中に入るが、右側は壁扱いなのでジャンプするときに右移動が妨害されて落ちてしまう。
 //マリオのいる座標が壁の場合の動作を設定する。さらに条件として右側に壁があるか否かも考慮する。
+//上に障害物があってジャンプで敵をよけられない。
