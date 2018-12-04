@@ -27,11 +27,10 @@
 
 package ch.idsia.scenarios;
 
+import ch.idsia.agents.Agent;
+import ch.idsia.agents.controllers.Work4_2RuleAgent;
 import ch.idsia.benchmark.tasks.BasicTask;
 import ch.idsia.tools.MarioAIOptions;
-import ch.idsia.agents.Agent;
-import ch.idsia.agents.controllers.IgnoreObstacleAgent;
-import ch.idsia.agents.controllers.Work4_1RuleAgent;
 
 /**
  * Created by IntelliJ IDEA. User: Sergey Karakovskiy, sergey at idsia dot ch Date: Mar 17, 2010 Time: 8:28:00 AM
@@ -43,11 +42,11 @@ public static void main(String[] args)
 {
     final MarioAIOptions marioAIOptions = new MarioAIOptions(args);
 
-    final Agent agent = new Work4_1RuleAgent();
+    final Agent agent = new Work4_2RuleAgent();
     marioAIOptions.setAgent(agent);
 
     marioAIOptions.setArgs("-lco off -lb on -le off -lhb off -lg on -ltb on -lhs off -lca on -lde on -ld 5 -ls 133829");
-    
+
     final BasicTask basicTask = new BasicTask(marioAIOptions);
     basicTask.setOptionsAndReset(marioAIOptions);
     basicTask.doEpisodes(1,true,1);

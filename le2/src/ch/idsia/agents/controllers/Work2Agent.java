@@ -1,10 +1,10 @@
 package ch.idsia.agents.controllers;
 
 import ch.idsia.agents.Agent;
-import ch.idsia.benchmark.mario.engine.sprites.Mario;
-import ch.idsia.benchmark.mario.environments.Environment;
-import ch.idsia.benchmark.mario.engine.sprites.Sprite;
 import ch.idsia.benchmark.mario.engine.GeneralizerLevelScene;
+import ch.idsia.benchmark.mario.engine.sprites.Mario;
+import ch.idsia.benchmark.mario.engine.sprites.Sprite;
+import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Work2Agent extends BasicMarioAIAgent implements Agent {
 	int trueJumpCounter = 0;
@@ -38,7 +38,7 @@ public class Work2Agent extends BasicMarioAIAgent implements Agent {
 				&& getReceptiveFieldCellValue(marioEgoRow + 7, c) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 8, c) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 9, c) == 0;
-	}
+	}//isHoleの定義
 
 	public boolean[] getAction() {
 		if (isObstacle(marioEgoRow, marioEgoCol + 1)
@@ -46,21 +46,22 @@ public class Work2Agent extends BasicMarioAIAgent implements Agent {
 				|| getEnemiesCellValue(marioEgoRow, marioEgoCol + 1) != Sprite.KIND_NONE
 				|| isHole(marioEgoCol + 1)) {
 			action[Mario.KEY_JUMP] = isMarioAbleToJump || !isMarioOnGround;
-		}
-		// 真横に障害物、敵が右2マスにいるときジャンプ
+		}// 真横に障害物、敵が右2マスにいるときジャンプ
 				
 		if (isMarioOnGround) {
 			falling = 0;
-		}
+		}//通常時falling=0
 		if (getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 2, marioEgoCol) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 3, marioEgoCol) == 0) {
 			falling = -1;
-		} // 3マス下が穴→-1
+		} // ジャンプしたfalling=-1
 		if (falling == -1 && getReceptiveFieldCellValue(marioEgoRow + 1, marioEgoCol) == 0
 				&& getReceptiveFieldCellValue(marioEgoRow + 2, marioEgoCol) == 0) {
 			falling = 1;
-		} // falling = -1 かつ 2マス下が穴 → 1
+		} // 落下中falling=1
+		//fallingの設定
+		
 		if (falling == 1 && !isHole(marioEgoCol) && isHole(marioEgoCol + 1)) {
 			action[Mario.KEY_RIGHT] = false;
 		}
